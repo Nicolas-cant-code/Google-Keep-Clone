@@ -12,7 +12,9 @@ class Note {
 // App
 class App {
     constructor() {
-        this.notes = [new Note("abc1", "test title", "test text")];
+        // localStorage.setItem("test", JSON.stringify(["123"]));
+        // console.log(JSON.parse(localStorage.getItem("test")));
+        this.notes = JSON.parse(localStorage.getItem("notes")) || [];
         this.selectedNoteID = "";
         this.miniSidebar = true;
         
@@ -72,7 +74,7 @@ class App {
         if (isInactiveFormClickedOn) {
             this.openActiveForm();
         } else if (!isInactiveFormClickedOn && !isActiveFormClickedOn) {
-            this.addNote({title, text});
+            this.addNote({ title, text });
             this.closeActiveForm();
         }
     };
@@ -97,8 +99,8 @@ class App {
         if ($selectedNote && !event.target.closest(".archive")) {
             this.selectedNoteID = $selectedNote.id;
 
-            this.$modalText.value = $selectedNote.children[2].innerHTML;
             this.$modalTitle.value = $selectedNote.children[1].innerHTML;
+            this.$modalText.value = $selectedNote.children[2].innerHTML;
 
             this.$modal.classList.add("open-modal");
         } else {
@@ -108,8 +110,14 @@ class App {
     closeModal(event) {
         const isModalFormClickedOn = this.$modalForm.contains(event.target);
         const isCloseModalBtnClickedOn = this.$closeModalForm.contains(event.target);
-        if ((!isModalFormClickedOn || isCloseModalBtnClickedOn) && this.$modal.classList.contains("open-modal")) {
-            this.editNote(this.selectedNoteID, {title: this.$modalTitle.value, text: this.$modalText.value});
+        if (
+            (!isModalFormClickedOn || isCloseModalBtnClickedOn) && 
+            this.$modal.classList.contains("open-modal")
+        ) {
+            this.editNote(this.selectedNoteID, {
+                title: this.$modalTitle.value,
+                text: this.$modalText.value
+            });
             this.$modal.classList.remove("open-modal");
         } else {
             return;
@@ -130,16 +138,16 @@ class App {
 
 
     // Adds a note
-    addNote({title, text}) {
+    addNote({ title, text }) {
         if (text != "") {
         const newNote = new Note(cuid(),title,text);
         this.notes = [...this.notes, newNote];
-        this.displayNotes();
+        this.render();
         }
     }
 
     // Edits a note
-    editNote(id, {title, text}) {
+    editNote(id, { title, text }) {
         this.notes.map(note => {
             if (note.id == id) {
                 note.title = title;
@@ -147,13 +155,13 @@ class App {
             }
             return note;
         })
-        this.displayNotes();
+        this.render();
     }
 
     // Delete a note
     deleteNote(id) {
-        this.notes = this.notes.filter(note => note.id !=id);
-        this.displayNotes();
+        this.notes = this.notes.filter((note) => note.id !=id);
+        this.render();
     }
 
     handleMouseOverNote(element) {
@@ -188,6 +196,15 @@ class App {
         }
     }
 
+    // save notes
+    saveNotes() {
+        localStorage.setItem('notes', JSON.stringify(this.notes));
+    }
+
+    render() {
+        this.saveNotes();
+        this.displayNotes();
+    }
     // Display
     displayNotes() {
         this.$notes.innerHTML = this.notes.map((note) => 
